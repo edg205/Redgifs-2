@@ -30,13 +30,16 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 public class MainActivity extends AppCompatActivity {
+
+
 
     private boolean Loading = false;
     private static String current_user = "";
@@ -49,8 +52,6 @@ public class MainActivity extends AppCompatActivity {
     private RedgifsAdapter rv_adapter;
     private FlowLayout layout_info;
 
-    private OkHttpClient client;
-
     private final ArrayList<HashMap<String, Object>> GIFS = new ArrayList<>();
 
     static final int DR_ID_ALL = 0;
@@ -62,10 +63,17 @@ public class MainActivity extends AppCompatActivity {
     static final int DR_ID_TOP28 = 6;
 
 
+
+
+
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         initDrawer();
 
@@ -73,7 +81,6 @@ public class MainActivity extends AppCompatActivity {
         UrlTemplateUser = "https://api.redgifs.com/v2/users/~/search?order=$&page=@";
 
         rv1 = findViewById(R.id.rv1);
-        client = new OkHttpClient();
         layout_info = findViewById(R.id.layout_info);
 
         UpdateInfo();
@@ -108,8 +115,9 @@ public class MainActivity extends AppCompatActivity {
         rv1.addOnScrollListener(scrollListener);
 
         try {
+            OkHttp3Downloader downloader = new OkHttp3Downloader(Redgifs.httpclient);
             Picasso picasso = new Picasso.Builder(this)
-                    .downloader(new OkHttp3Downloader(this, 25000000))
+                    .downloader(downloader)
                     .memoryCache(new LruCache(this))
                     .build();
             Picasso.setSingletonInstance(picasso);
@@ -129,7 +137,6 @@ public class MainActivity extends AppCompatActivity {
             input.setLayoutParams(params);
             container.addView(input);
 
-
             AlertDialog dialog = new AlertDialog.Builder(this)
                     .setTitle("Search")
                     .setMessage("Use \",\" as delimeter for tags")
@@ -144,7 +151,8 @@ public class MainActivity extends AppCompatActivity {
             input.requestFocus();
             dialog.show();
         });
-        FetchFeed();
+        getToken();
+//        FetchFeed();
     }
 
     public static Request getSimpleRequest(String url) {
@@ -153,6 +161,41 @@ public class MainActivity extends AppCompatActivity {
                 .url(url)
                 .header("User-Agent", USER_AGENT)
                 .build();
+    }
+
+
+    public void getToken() {
+        ExecutorService executors = Executors.newFixedThreadPool(1);
+        @SuppressLint("NotifyDataSetChanged") Runnable runnable = () -> {
+            try {
+                Response response = Redgifs.httpclient.newCall(Redgifs.getRequestBuilder("https://www.redgifs.com/")).execute();
+                String doc = Objects.requireNonNull(response.body()).string();
+                Pattern p = Pattern.compile("<link href=/assets/js/index.(.*).js rel=preload as=script>");
+                Matcher m = p.matcher(doc);
+                String id = "";
+                while (m.find()) {
+                    id = m.group(1);
+                    Log.i("ID", id);
+                }
+
+                String asset = "https://www.redgifs.com/assets/js/index." + id + ".js";
+                response = Redgifs.httpclient.newCall(Redgifs.getRequestBuilder(asset)).execute();
+                String js = Objects.requireNonNull(response.body()).string();
+                js = js.replace(",", ",\n");
+                js = js.replace("}", "\n}");
+                js = js.replace("{", "{\n");
+                p = Pattern.compile("M=\"(.*)\"");
+                m = p.matcher(js);
+                while (m.find()) {
+                    Redgifs.token = m.group(1);
+                    Log.i("Token", Redgifs.token);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            FetchFeed();
+        };
+        executors.submit(runnable);
     }
 
     public void FetchFeed() {
@@ -180,7 +223,9 @@ public class MainActivity extends AppCompatActivity {
                 ur = ur.replace("$", "" + order);
                 ur = ur.replace("~", "" + current_user);
                 Log.i("URL", ur);
-                Response response =  client.newCall(getSimpleRequest(ur)).execute();
+
+                Response response = Redgifs.httpclient.newCall(Redgifs.getRequestBuilder(ur)).execute();
+
                 if (response.isSuccessful()) {
                     ResponseBody body = response.body();
 

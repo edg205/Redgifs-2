@@ -118,13 +118,24 @@ public class RedgifsAdapter extends RecyclerView.Adapter<RedgifsAdapter.ViewHold
                     if (url.isEmpty()) {
                         url = Objects.requireNonNull(GIFS.get(position).get("url_sd")).toString();
                     }
-                    holder.p_video_sd.setVideoURI(Uri.parse(url));
+
+                    Log.i("Start", "url: " + url);
+
+                    Map<String, String> headers = new HashMap<>();
+                    headers.put("authorization", "Bearer " + Redgifs.token);
+                    headers.put("user-agent", Redgifs.USER_AGENT);
+
+                    holder.p_video_sd.setVideoURI(Uri.parse(url), headers);
                     holder.p_video_sd.setLayoutParams(new LinearLayout.LayoutParams(holder.p_poster.getMeasuredWidth(), holder.p_poster.getMeasuredHeight()));
                     holder.p_video_sd.setVisibility(VISIBLE);
                     holder.p_poster.setVisibility(GONE);
 
-                    holder.p_video_sd.setOnPreparedListener(mp -> {
+                    holder.p_video_sd.setOnErrorListener((mediaPlayer, i, i1) -> {
+                        Log.e("Media Error", i + " " + i1);
+                        return false;
+                    });
 
+                    holder.p_video_sd.setOnPreparedListener(mp -> {
                         mp.setLooping(true);
                         holder.p_video_sd.start();
                     });

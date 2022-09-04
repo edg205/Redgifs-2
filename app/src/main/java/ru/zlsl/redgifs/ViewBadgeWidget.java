@@ -1,14 +1,11 @@
 package ru.zlsl.redgifs;
 
 import android.content.Context;
-import android.content.Intent;
-import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 
