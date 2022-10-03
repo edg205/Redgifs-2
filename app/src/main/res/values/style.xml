@@ -4,5 +4,8 @@
     <item name="windowNoTitle">true</item>
     <item name="android:windowFullscreen">true</item>
 </style>
+<style name="AppTheme.NoActionBar.Launcher">
+    <item name="android:windowBackground">@drawable/launch_screen</item>
+</style>
 
 </resources>

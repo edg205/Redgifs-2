@@ -39,7 +39,7 @@ import okhttp3.ResponseBody;
 
 public class MainActivity extends AppCompatActivity {
 
-
+    private Bundle sis;
 
     private boolean Loading = false;
     private static String current_user = "";
@@ -66,19 +66,11 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-
-
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    private void InitInterface() {
         setContentView(R.layout.activity_main);
-
 
         initDrawer();
 
-        UrlTemplate = "https://api.redgifs.com/v2/gifs/search?type=g&search_text=#&order=$&page=@&count=30";
-        UrlTemplateUser = "https://api.redgifs.com/v2/users/~/search?order=$&page=@";
 
         rv1 = findViewById(R.id.rv1);
         layout_info = findViewById(R.id.layout_info);
@@ -114,18 +106,6 @@ public class MainActivity extends AppCompatActivity {
 
         rv1.addOnScrollListener(scrollListener);
 
-        try {
-            OkHttp3Downloader downloader = new OkHttp3Downloader(Redgifs.httpclient);
-            Picasso picasso = new Picasso.Builder(this)
-                    .downloader(downloader)
-                    .memoryCache(new LruCache(this))
-                    .build();
-            Picasso.setSingletonInstance(picasso);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
         ImageButton is = findViewById(R.id.i_srch);
         is.setOnClickListener(view -> {
             final EditText input = new EditText(this);
@@ -151,8 +131,29 @@ public class MainActivity extends AppCompatActivity {
             input.requestFocus();
             dialog.show();
         });
+    }
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        UrlTemplate = "https://api.redgifs.com/v2/gifs/search?type=g&search_text=#&order=$&page=@&count=30";
+        UrlTemplateUser = "https://api.redgifs.com/v2/users/~/search?order=$&page=@";
+
+        try {
+            OkHttp3Downloader downloader = new OkHttp3Downloader(Redgifs.httpclient);
+            Picasso picasso = new Picasso.Builder(this)
+                    .downloader(downloader)
+                    .memoryCache(new LruCache(this))
+                    .build();
+            Picasso.setSingletonInstance(picasso);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        setTheme(R.style.Theme_Redgifs);
+        super.onCreate(savedInstanceState);
+        InitInterface();
         getToken();
-//        FetchFeed();
     }
 
     public static Request getSimpleRequest(String url) {
@@ -187,8 +188,10 @@ public class MainActivity extends AppCompatActivity {
                 p = Pattern.compile("M=\"(.*)\"");
                 m = p.matcher(js);
                 while (m.find()) {
-                    Redgifs.token = m.group(1);
-                    Log.i("Token", Redgifs.token);
+                    if (m.group(1).length() > 16) {
+                        Redgifs.token = m.group(1);
+                        Log.i("Token", Redgifs.token);
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
