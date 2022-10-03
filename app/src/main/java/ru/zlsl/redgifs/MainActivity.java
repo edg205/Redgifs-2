@@ -68,9 +68,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void InitInterface() {
         setContentView(R.layout.activity_main);
-
         initDrawer();
-
 
         rv1 = findViewById(R.id.rv1);
         layout_info = findViewById(R.id.layout_info);
@@ -150,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        setTheme(R.style.Theme_Redgifs);
+//        setTheme(R.style.Theme_Redgifs);
         super.onCreate(savedInstanceState);
         InitInterface();
         getToken();

@@ -6,6 +6,9 @@
 </style>
 <style name="AppTheme.NoActionBar.Launcher">
     <item name="android:windowBackground">@drawable/launch_screen</item>
+    <item name="windowActionBar">false</item>
+    <item name="windowNoTitle">true</item>
+    <item name="android:windowFullscreen">true</item>
 </style>
 
 </resources>

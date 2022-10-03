@@ -20,7 +20,7 @@
         android:theme="@style/Theme.Redgifs">
         <activity
             android:name=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar.Launcher"
+            android:theme="@style/AppTheme.NoActionBar"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
